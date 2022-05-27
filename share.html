@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>msDemo</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='./src/jquery-3.3.1.min.js'></script>
+
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+	<script type="text/javascript">
+
+</script>
+</head>
+<body>
+<div id='currentSacle'>
+</div>
+<div id='map'>
+</div>
+
+<script>
+var spriteUrl="https://www.arcgis.com/sharing/rest/content/items/75f4dfdff19e445395653121a95a85db/resources/sprites/sprite";
+var glyphsUrl="./src/fonts/{fontstack}/{range}.pbf";
+var simple = {
+    "version": 8,
+    "zoom":3,
+    "center":  [105.5795, 39.8282],
+    "sources": {
+        "custom": {
+            "type": "vector",
+            "tiles": [
+                "http://10.61.128.68:8081/mvt/bound/{z}/{x}/{y}"
+            ]
+        }
+    },
+    "sprite": "https://www.arcgis.com/sharing/rest/content/items/75f4dfdff19e445395653121a95a85db/resources/sprites/sprite",
+    "glyphs": "./src/fonts/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id" : "bound",
+            "type" : "fill",
+            "source" : "custom",
+            "source-layer" : "bound",
+            "minzoom" : 0,
+            "layout" : {},
+            "paint" : {
+                "fill-color" :"#111111",
+                "fill-outline-color" : "#15cccc"
+            }
+        },
+        {
+            "id" : "river",
+            "type" : "line",
+            "source" : "custom",
+            "source-layer" : "river",
+            "minzoom" : 2,
+            "maxzoom" : 10,
+            "layout" : {
+                "line-join" : "round"
+            },
+            "paint" : {
+                "line-color" : "#99D9F2",
+                "line-width" : {
+                    "base" : 1.2,
+                    "stops" : [[2, 0.5], [10, 3.33]]
+                }
+            }
+        },{
+            "id" : "city",
+            "type" : "symbol",
+            "source" : "custom",
+            "source-layer" : "city",
+            "minzoom" : 2,
+            "layout" : {
+                "icon-image" : "City small scale/capital",
+                "icon-rotate" : 90,
+                "symbol-spacing" : 20,
+                "icon-rotation-alignment" : "map",
+                "icon-allow-overlap" : true,
+                "icon-padding" : 1
+            },
+            "paint" : {}
+        },
+        {
+            "id" : "cityName",
+            "type" : "symbol",
+            "source" : "custom",
+            "source-layer" : "city",
+            "minzoom" : 3,
+            "layout" : {
+                "symbol-avoid-edges" : true,
+                "text-font" : ["Microsoft YaHei"],
+                "text-max-width" : 8,
+                "text-field" : "{name}",
+                "text-padding" : 1,
+                "text-size" : {
+                    "stops" : [[3, 10], [10, 16]]
+                },
+                "text-letter-spacing" : 0.1
+            },
+            "paint" : {
+                "text-color" : {
+                    "stops" : [[3, "#ffffff"], [10, "#ffffff"]]
+                },
+                "text-halo-color" : "#F5F2DC",
+                "text-halo-width" : 0.93
+            }
+        },
+
+        {
+            "id" : "Bound/Name",
+            "type" : "symbol",
+            "source" : "custom",
+            "source-layer" : "bound",
+            "minzoom" : 1,
+            "layout" : {
+                "symbol-avoid-edges" : true,
+                "text-font" : ["Microsoft YaHei"],
+                "symbol-spacing" : 2000,
+                "text-size" : 13.33,
+                "text-letter-spacing" : 0.01,
+                "text-max-width" : 8,
+                "text-field" : "{name}",
+                "text-padding" : 15
+            },
+            "paint" : {
+                "text-color" : "#497AAB"
+            }
+        },{
+            "id" : "river/label",
+            "type" : "symbol",
+            "source" : "custom",
+            "source-layer" : "river",
+            "minzoom" : 1,
+            "layout" : {
+                "symbol-placement" : "line",
+                "symbol-avoid-edges" : true,
+                "symbol-spacing" : 500,
+                "text-font" : ["Microsoft YaHei"],
+                "text-size" : 15,
+                "text-letter-spacing" : 0.07,
+                "text-max-width" : 8,
+                "text-max-angle" : 30,
+                "text-field" : "{name}",
+                "text-padding" : 2,
+                "text-offset" : [0, -0.5]
+            },
+            "paint" : {
+                "text-color" : "#ffff00"
+            }
+        }
+    ]
+};
+// mapboxgl.accessToken = 'pk.eyJ1Ijoib25lZ2lzZXIiLCJhIjoiY2plZHptcnVuMW5tazMzcWVteHM2aGFsZiJ9.ERWP7zZ-N6fmNl3cRocJ1g';
+mapboxgl.accessToken = 'pk.eyJ1IjoiZ2d5eXNpIiwiYSI6ImNqaTVwbzVyeTBtN3Yzd28zY3hrNXphM3MifQ.EkXqUIpefUT9B37aWuzjsA';
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: simple,
+    // center: [2.317600, 48.866500],
+    // zoom: 12.0
+});
+map.on('load',function(e){
+	document.getElementById('currentSacle').innerHTML ="当前层级："+ (Math.round(parseFloat(map.getZoom())*100)/100).toString();
+	//var tilePackageName=getParams("source");//document.getElementById("ass").value;
+	//var mID=getParams("mid");//document.getElementById("bss").value;
+    map.setCenter([105.5795, 39.8282]);
+	map.setZoom(3);
+});
+map.on('zoom',function (e) {
+    document.getElementById('currentSacle').innerHTML ="当前层级："+ (Math.round(parseFloat(map.getZoom())*100)/100).toString();
+});
+function getParams(key) {
+            var reg = new RegExp("(^|&)" + key + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) {
+                return unescape(r[2]);
+            }
+            return null;
+        };
+
+
+
+
+
+</script>
+</body>
+
+
+</html>
